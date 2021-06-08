@@ -1,0 +1,36 @@
+# REMOVE TEST CONTAINERS (if running)
+- name: Stop/Remove Test Containers if running
+  community.docker.docker_container:
+    name: "{{ item }}"
+    state: absent
+    force_kill: true
+  loop:
+    - kafka
+
+# CREATE PATH FOR CONFIG FILE
+- name: "Create {{ env_path }} if doesn't exist"
+  file:
+    path: "{{ env_path }}"
+    state: directory
+    recurse: yes
+
+# COPY KAFKA ENV FILE TO DOCKER CONTAINER
+- name: "Copy kafka env file to {{ env_path }}"
+  check_mode: false
+  template: 
+    src: kafka.env
+    dest: "{{ env_path }}/kafka.env"
+    mode: 0744
+
+# DEPLOY ZOOKEEPER SERVICE
+- name: Deploy Kafka container
+  community.docker.docker_container:
+    name: kafka
+    image: confluentinc/cp-kafka:latest
+    networks:
+      - name: confluent
+    env_file: "{{ env_path }}/kafka.env"
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+

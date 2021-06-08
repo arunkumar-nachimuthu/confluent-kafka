@@ -1,0 +1,8 @@
+---
+all:
+  children:
+    test:
+      hosts:
+        localhost:
+          ansible_python_interpreter: "python"
+          ansible_connection: local

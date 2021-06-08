@@ -1,0 +1,4 @@
+---
+# Main ansible playbook to install all components of Kafka
+  - import_playbook: zookeeper.yml
+  - import_playbook: kafka.yml

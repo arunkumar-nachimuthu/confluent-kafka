@@ -1,0 +1,45 @@
+# Note: Apache Kafka 2.8.0 does not require zookeeper anymore
+# and uses Raft Controller to replace Zookeeper
+# Refer https://www.confluent.io/blog/kafka-without-zookeeper-a-sneak-peek/
+# TO DO: Replace Zookeeper requirements wheverver necessary
+
+# REMOVE TEST CONTAINERS (if running)
+- name: Stop/Remove Test Containers if running
+  community.docker.docker_container:
+    name: "{{ item }}"
+    state: absent
+    force_kill: true
+  loop:
+    - zookeeper
+
+# CREATE DOCKER NETWORK FOR KAFKA AND ZOOKEEPER TO COMMUNICATE
+- name: Create docker network
+  community.docker.docker_network:
+    name: confluent
+
+# CREATE PATH FOR CONFIG FILE
+- name: "Create {{ env_path }} if doesn't exist"
+  file:
+    path: "{{ env_path }}"
+    state: directory
+    recurse: yes
+
+# COPY ZOOKEEPER ENV FILE TO DOCKER CONTAINER
+- name: "Copy zookeeper env file to {{ env_path }}"
+  check_mode: false
+  template: 
+    src: zookeeper.env
+    dest: "{{ env_path }}/zookeeper.env"
+    mode: 0744
+
+# DEPLOY ZOOKEEPER SERVICE
+- name: Deploy Zookeeper container
+  community.docker.docker_container:
+    name: zookeeper
+    image: confluentinc/cp-zookeeper:latest
+    networks:
+      - name: confluent
+    env_file: "{{ env_path }}/zookeeper.env"
+    ports:
+      - "2181:2181"
+

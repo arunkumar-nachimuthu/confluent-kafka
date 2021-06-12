@@ -32,5 +32,4 @@
     env_file: "{{ env_path }}/kafka.env"
     ports:
       - "9092:9092"
-      - "9101:9101"
 
